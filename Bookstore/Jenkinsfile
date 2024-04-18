@@ -1,0 +1,23 @@
+pipeline {
+    agent any
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        triggers {
+            githubPush()
+        }
+    }
+    
+    stages {
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    docker.build('Bookstore:latest', '-f Dockerfile .')
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_credentials_id') {
+                        docker.image('Bookstore:latest').push('latest')
+                    }
+                }
+            }
+        }
+    }
+}
